@@ -282,7 +282,7 @@ $('dback').onclick=closeDeck;addEventListener('keydown',e=>{if(e.key==='Escape')
 </script>
 <script>
 // Set your R2 public URL here (or pass ?r2=https://... in the page URL)
-const BASE=(new URLSearchParams(location.search).get('r2')||'https://YOUR-BUCKET.pub.r2.dev').replace(/\/$/,'');
+const BASE=(new URLSearchParams(location.search).get('r2')||'https://pub-a7da17c169504968a6b83f45d8b8188a.r2.dev').replace(/\/$/,'');
 (async()=>{
  try{
   const r=await fetch(BASE+'/library.json',{cache:'no-cache'});
