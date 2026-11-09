@@ -231,12 +231,23 @@ requestAnimationFrame(()=>{const c=cards[now];
 <script id="s2" type="text/plain">
 const $=id=>document.getElementById(id),deck=$('deck'),disc=$('disc'),arm=$('arm'),vt=$('vt');
 const AU=new Audio();AU.preload='auto';
+// iOS ignores audio.volume (read-only), so there we route the audio through a Web Audio gain node
+const volFixed=(()=>{const a=new Audio();a.volume=.5;return a.volume!==.5})();
+if(volFixed)AU.crossOrigin='anonymous';
+let GC,VG;
+function setupGain(){
+ if(!volFixed||VG||!window.__LIB)return;
+ try{
+  if(navigator.audioSession)navigator.audioSession.type='playback'; // keep sound on with the silent switch
+  GC=new(window.AudioContext||window.webkitAudioContext)();
+  const sr=GC.createMediaElementSource(AU);VG=GC.createGain();VG.gain.value=vol;sr.connect(VG);VG.connect(GC.destination);
+ }catch(e){VG=null}}
 const demo=!window.__LIB;
 function real(){return !demo&&!!tracks[now][trk].src}
 function loadSrc(on){const t=tracks[now][trk];if(!t.src){AU.pause();return}
  const u=BASE+'/'+encodeURI(t.src);
  if(AU.dataset.u!==u){AU.src=u;AU.dataset.u=u}else if(pos===0)AU.currentTime=0;
- if(on)AU.play().catch(()=>{});else AU.pause()}
+ if(on){if(GC&&GC.state==='suspended')GC.resume();AU.play().catch(()=>{})}else AU.pause()}
 let vol=.5,isOpen=false,lastS=-1,AC,mg,os=[];
 const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0');
 function fill(){const al=albums[now],l=$('lab');disc.classList.toggle('pic',!!al.img);
@@ -288,7 +299,7 @@ function audio(on){
  [1,1.25,1.5].forEach((m,k)=>os[k].frequency.setTargetAtTime(r*m*(k>1?2:1),AC.currentTime,.12));
  if(on&&AC.state==='suspended')AC.resume();
  mg.gain.setTargetAtTime(on?vol*.35:0,AC.currentTime,.2)}
-function setVol(v){vol=Math.min(1,Math.max(0,v));AU.volume=vol;$('vf').style.height=vol*100+'%';$('vh').style.top=(1-vol)*100+'%';
+function setVol(v){vol=Math.min(1,Math.max(0,v));if(VG)VG.gain.setTargetAtTime(vol,GC.currentTime,.02);else AU.volume=vol;$('vf').style.height=vol*100+'%';$('vh').style.top=(1-vol)*100+'%';
  vt.setAttribute('aria-valuenow',Math.round(vol*100));if(AC)mg.gain.setTargetAtTime((playing&&!hold&&landed)?vol*.35:0,AC.currentTime,.05)}
 const vp=e=>{const r=vt.getBoundingClientRect();setVol(1-(e.clientY-r.top)/r.height)};
 vt.onpointerdown=e=>{vt.setPointerCapture(e.pointerId);vp(e)};
@@ -299,7 +310,7 @@ function size(){deck.style.setProperty('--D',Math.min(innerWidth*.56,innerHeight
 addEventListener('resize',size);size();setVol(.5);
 
 function openDeck(i,c){
- if(isOpen)return;isOpen=true;hold=true;
+ if(isOpen)return;isOpen=true;hold=true;setupGain();
  if(i!==now)select(i,true);else{playing=true;setPP()}
  size();fill();
  const r=c.getBoundingClientRect(),S=c.offsetWidth,m=new DOMMatrix(getComputedStyle(c).transform),f=Math.hypot(m.a,m.b)||1,Se=S*f;
