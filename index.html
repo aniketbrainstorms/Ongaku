@@ -81,6 +81,9 @@ svg{display:block}
 #dback{position:absolute;left:14px;top:calc(14px + env(safe-area-inset-top,0px));width:36px;height:36px;display:grid;place-items:center;color:#555}
 @media (prefers-reduced-motion:reduce){.rec{animation:none}}
 .card.img .ttl{display:none}
+.pic .lab{left:0;top:0;width:100%;height:100%}
+.pic .rec::after{content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;background:repeating-radial-gradient(circle,rgba(0,0,0,.16) 0 1px,transparent 2px 4px)}
+.pic .lab::after{left:47%;top:47%;width:6%;height:6%;box-shadow:0 0 0 calc(var(--D)*.012) rgba(0,0,0,.4)}
 </style>
 </head>
 <body>
@@ -224,7 +227,7 @@ function loadSrc(){const t=tracks[now][trk];if(!t.src){AU.pause();return}
  if(playing)AU.play().catch(()=>{});else AU.pause()}
 let vol=.5,isOpen=false,lastS=-1,AC,mg,os=[];
 const fmt=s=>String(Math.floor(s/60)).padStart(2,'0')+':'+String(Math.floor(s%60)).padStart(2,'0');
-function fill(){const al=albums[now],l=$('lab');
+function fill(){const al=albums[now],l=$('lab');disc.classList.toggle('pic',!!al.img);
  l.style.background=al.bg;l.innerHTML='<div class="art" style="position:absolute;inset:0;background:'+al.art+'"></div>';
  $('tt').innerHTML='<i>'+esc(tracks[now][trk].n)+'</i> – '+esc(al.a);$('al').textContent=al.t;
  document.getElementById('pt').textContent=tracks[now][trk].n}
